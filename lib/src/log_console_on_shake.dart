@@ -6,8 +6,8 @@ class LogConsoleOnShake extends StatefulWidget {
   final bool debugOnly;
 
   LogConsoleOnShake({
-    @required this.child,
-    this.dark,
+    required this.child,
+    this.dark = false,
     this.debugOnly = true,
   });
 
@@ -16,7 +16,7 @@ class LogConsoleOnShake extends StatefulWidget {
 }
 
 class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
-  ShakeDetector _detector;
+  ShakeDetector? _detector;
   bool _open = false;
 
   @override
@@ -40,7 +40,7 @@ class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
 
   _init() {
     _detector = ShakeDetector(onPhoneShake: _openLogConsole);
-    _detector.startListening();
+    _detector?.startListening();
   }
 
   _openLogConsole() async {
@@ -53,7 +53,7 @@ class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
 
   @override
   void dispose() {
-    _detector.stopListening();
+    _detector?.stopListening();
     super.dispose();
   }
 }

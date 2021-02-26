@@ -1,57 +1,62 @@
 import 'package:flutter/material.dart';
 
+enum _State {
+  text,
+  bracket,
+  code
+}
 class AnsiParser {
-  static const TEXT = 0, BRACKET = 1, CODE = 2;
+ 
 
   final bool dark;
 
   AnsiParser(this.dark);
 
-  Color foreground;
-  Color background;
-  List<TextSpan> spans;
+  Color? _foreground;
+  Color? _background;
+  List<TextSpan>? _spans;
+  List<TextSpan> get spans => _spans ?? <TextSpan>[];
 
   void parse(String s) {
-    spans = [];
-    var state = TEXT;
-    StringBuffer buffer;
-    var text = StringBuffer();
+    final spans = <TextSpan>[];
+    _spans = spans;
+    var state = _State.text;
+    StringBuffer? buffer;
+    final text = StringBuffer();
     var code = 0;
-    List<int> codes;
-
-    for (var i = 0, n = s.length; i < n; i++) {
-      var c = s[i];
+    List<int>? codes;
+    for (final c in s.characters) {
 
       switch (state) {
-        case TEXT:
+        case _State.text:
           if (c == '\u001b') {
-            state = BRACKET;
+            state = _State.bracket;
             buffer = StringBuffer(c);
             code = 0;
-            codes = [];
+            codes = <int>[];
           } else {
             text.write(c);
           }
           break;
 
-        case BRACKET:
-          buffer.write(c);
+        case _State.bracket:
+          buffer!.write(c);
           if (c == '[') {
-            state = CODE;
+            state = _State.code;
           } else {
-            state = TEXT;
+            state = _State.text;
             text.write(buffer);
           }
           break;
 
-        case CODE:
-          buffer.write(c);
-          var codeUnit = c.codeUnitAt(0);
+        case _State.code:
+          buffer!.write(c);
+          final codeUnit = c.codeUnitAt(0);
           if (codeUnit >= 48 && codeUnit <= 57) {
             code = code * 10 + codeUnit - 48;
             continue;
           } else if (c == ';') {
-            codes.add(code);
+            codes!.add(code);
             code = 0;
             continue;
           } else {
@@ -59,9 +64,9 @@ class AnsiParser {
               spans.add(createSpan(text.toString()));
               text.clear();
             }
-            state = TEXT;
+            state = _State.text;
             if (c == 'm') {
-              codes.add(code);
+              codes!.add(code);
               handleCodes(codes);
             } else {
               text.write(buffer);
@@ -82,35 +87,37 @@ class AnsiParser {
 
     switch (codes[0]) {
       case 0:
-        foreground = getColor(0, true);
-        background = getColor(0, false);
+        _foreground = getColor(0, true);
+        _background = getColor(0, false);
         break;
       case 38:
-        foreground = getColor(codes[2], true);
+        _foreground = getColor(codes[2], true);
         break;
       case 39:
-        foreground = getColor(0, true);
+        _foreground = getColor(0, true);
         break;
       case 48:
-        background = getColor(codes[2], false);
+        _background = getColor(codes[2], false);
         break;
       case 49:
-        background = getColor(0, false);
+        _background = getColor(0, false);
     }
   }
 
-  Color getColor(int colorCode, bool foreground) {
+  Color? getColor(int colorCode, bool foreground) {
     switch (colorCode) {
       case 0:
         return foreground ? Colors.black : Colors.transparent;
       case 12:
-        return dark ? Colors.lightBlue[300] : Colors.indigo[700];
+        return dark ? Colors.lightBlue[300]! : Colors.indigo[700]!;
       case 208:
-        return dark ? Colors.orange[300] : Colors.orange[700];
+        return dark ? Colors.orange[300]! : Colors.orange[700]!;
       case 196:
-        return dark ? Colors.red[300] : Colors.red[700];
+        return dark ? Colors.red[300]! : Colors.red[700]!;
       case 199:
-        return dark ? Colors.pink[300] : Colors.pink[700];
+        return dark ? Colors.pink[300]! : Colors.pink[700]!;
+      default:
+        return null;
     }
   }
 
@@ -118,8 +125,8 @@ class AnsiParser {
     return TextSpan(
       text: text,
       style: TextStyle(
-        color: foreground,
-        backgroundColor: background,
+        color: _foreground,
+        backgroundColor: _background,
       ),
     );
   }

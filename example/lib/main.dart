@@ -67,7 +67,7 @@ class HomeWidget extends StatelessWidget {
               child: Text("Shake Phone to open Console."),
             ),
           ),
-          FlatButton(onPressed: () => LogConsole.open(context), child: Text("or click here to open Console")),
+          FlatButton(onPressed: () => LogConsole.open(context, dark: true), child: Text("or click here to open Console")),
         ],
       ),
     );

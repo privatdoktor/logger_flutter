@@ -8,10 +8,14 @@ class LogConsole extends StatefulWidget {
 
   LogConsole({this.dark = false, this.showCloseButton = false});
 
-  static Future<void> open(BuildContext context, {bool dark}) async {
+  static Future<void> open(
+    BuildContext context,
+    {bool? dark}
+  ) async {
+    dark = dark ?? Theme.of(context).brightness == Brightness.dark;
     var logConsole = LogConsole(
       showCloseButton: true,
-      dark: dark ?? Theme.of(context).brightness == Brightness.dark,
+      dark: dark,
     );
     PageRoute route;
     if (Platform.isIOS) {
@@ -24,7 +28,7 @@ class LogConsole extends StatefulWidget {
   }
 
   static void add(OutputEvent outputEvent, {int bufferSize = 20}) {
-    while (_outputEventBuffer.length >= (bufferSize ?? 1)) {
+    while (_outputEventBuffer.length >= bufferSize) {
       _outputEventBuffer.removeFirst();
     }
     _outputEventBuffer.add(outputEvent);
@@ -261,8 +265,8 @@ class _LogConsoleState extends State<LogConsole> {
                 value: Level.wtf,
               )
             ],
-            onChanged: (value) {
-              _filterLevel = value;
+            onChanged: (Level? value) {
+              _filterLevel = value ?? Level.verbose;
               _refreshFilter();
             },
           )
@@ -303,9 +307,12 @@ class _LogConsoleState extends State<LogConsole> {
 
 class LogBar extends StatelessWidget {
   final bool dark;
-  final Widget child;
+  final Widget? child;
 
-  LogBar({this.dark, this.child});
+  LogBar({
+    this.dark = false,
+    this.child
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -316,7 +323,7 @@ class LogBar extends StatelessWidget {
           boxShadow: [
             if (!dark)
               BoxShadow(
-                color: Colors.grey[400],
+                color: Colors.grey[400]!,
                 blurRadius: 3,
               ),
           ],
