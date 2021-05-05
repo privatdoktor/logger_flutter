@@ -101,6 +101,9 @@ class AnsiParser {
         break;
       case 49:
         _background = getColor(0, false);
+        break;
+      default:
+        break;
     }
   }
 
